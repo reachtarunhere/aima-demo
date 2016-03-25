@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>kkvaab</title>
+<script type="text/javascript" src="jquery.min.js"></script>
+</head>
+<body>
+<div>
+	<canvas class="map-grid-world" />
+</div>
+<div>
+	<select class="map-element-type"></select>
+</div>
+
+<script type="text/javascript">
+
+var size = 30 , row = 10, column = 10;
+
+var gridArray = 
+[
+	[0,0,0,0,0,0,0,0,0,0,],
+	[0,0,0,0,0,0,0,0,0,0,],
+	[0,0,0,0,0,0,0,0,0,0,],
+	[0,0,0,0,"fire",0,0,0,0,0,],
+	[0,0,0,0,0,0,0,0,0,0,],
+	[0,0,0,0,0,"earth",0,0,0,0,],
+	[0,0,0,0,0,0,0,0,0,0,],
+	[0,0,0,0,0,0,"fire",0,0,0,],
+	[0,0,0,0,0,0,0,0,0,0,],
+	[0,0,0,0,0,0,0,0,0,0,]
+];
+var canvas=$('canvas.map-grid-world').get(0);
+var ctx= canvas.getContext('2d');
+
+var elements = {
+	"fire" :  "1.jpg",
+	"water" :  "2.png",
+	"earth" :  "3.png",
+	"wind" :  "4.png",
+	"land" :  "5.jpg",
+}
+
+function intializeWorld(state,size,elements){
+	var selectElement = $('select.map-element-type');
+	//Initialize select box
+	for(keys in elements) {
+		selectElement.append('<option value="'+elements[keys]+'">'+keys+'</option>');
+		// load images
+		var $downloadingImage = $("<img>");
+		$downloadingImage.attr("src", elements[keys]);
+	}
+	//initialize select and pattern
+	var background_grid = new Image(),pattern;
+	$(background_grid).load(function(){	
+		pattern = ctx.createPattern(background_grid, "repeat");
+	});
+	background_grid.src = selectElement.val();
+
+	// get some info about the canvas
+	var row = state.length;
+	var column = state[0].length;
+	var canvas = $('canvas.map-grid-world').get(0);
+	var ctx = canvas.getContext('2d');
+	canvas.width =  size * column;
+	canvas.height = size * row;
+	$('canvas.map-grid-world').removeClass('canvas.map-grid-world');
+	
+	//Initialize previous positions
+	for(var i=0;i<column;++i) {
+		for (var j = 0; j < row;) {
+			console.log(i,j);
+			if(state[i][j]==0) {
+	        	blockCreate('black','green', i, j);
+	        	++j;
+			}
+			else {
+				// var $downloadingImage = $("<img>");
+				// $downloadingImage.load(function(){
+				// });
+				background_grid = new Image()
+				$(background_grid).load(function(){	
+					pattern = ctx.createPattern(background_grid, "repeat");
+					blockCreate('transparent',pattern, i, j);
+					++j;
+				});
+				background_grid.src = elements[state[i][j]];
+				// background_grid.src = selectElement.val();
+				// pattern = ctx.createPattern(background_grid, "repeat");
+				
+			}
+		}
+	}
+
+
+
+	//change pattern on select change
+	selectElement.change(function() {
+		background_grid.src = selectElement.val();
+		pattern = ctx.createPattern(background_grid, "repeat");
+	});
+
+	function blockCreate(borderColor,fillColor,x,y) {
+        ctx.fillStyle = fillColor;
+		ctx.fillRect(x * size, y * size, size, size);
+		ctx.lineWidth=2;
+        ctx.strokeStyle = borderColor;
+		ctx.strokeRect((x * size)+1, (y * size)+1, size-2, size-2);
+	}
+
+	// click event, using jQuery for cross-browser convenience
+	$(canvas).click(function(e) {
+	    // calculate grid square numbers
+	    var gx = ~~ (e.offsetX / size);
+	    var gy = ~~ (e.offsetY/ size);
+
+	    if (state[gy][gx]) {
+	        // undo
+	        state[gy][gx] = false;
+	        blockCreate('black','green', gx, gy);
+	    } 
+	    else {
+	        state[gy][gx] = true;
+	        console.log(pattern);
+	        blockCreate('transparent',pattern, gx, gy);
+	    }
+	});
+}
+intializeWorld(gridArray,size,elements);
+
+
+
+// function blockCreate(borderColor,fillColor,x,y) {
+//     ctx.fillStyle = fillColor;
+// 	ctx.fillRect(x * size, y * size, size, size);
+// 	ctx.lineWidth=50;
+//     ctx.strokeStyle = borderColor;
+// 	ctx.strokeRect(x * size, y * size, size, size);
+// }
+
+// 	// createAgent(agent[0],agent[1],size,ctx);
+// function createAgent(posX,posY,size,ctx) {
+// 	if(gridArray[posX][posY]!=0) {
+// 		alert('Agent cannot be placed here!');
+// 		return;
+// 	}
+// 	else{
+// 		ctx.beginPath();
+// 	    ctx.arc((posY*size)+parseFloat(size/2),(posX*size)+parseFloat(size/2), size/2.5,0, 2*Math.PI);
+// 	    ctx.fillStyle = 'grey';
+// 		ctx.fill();
+// 	    ctx.strokeStyle = 'orange';
+// 		ctx.stroke();
+// 		ctx.closePath();
+// 	}
+// }
+
+
+
+</script>
+</body>
+</html>
